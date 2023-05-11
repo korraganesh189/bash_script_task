@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# update the package list
+sudo yum update
+
+# install Java
+sudo yum install java-1.8.0-openjdk-devel
+
+# download and extract Apache Tomcat
+wget https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.54/bin/apache-tomcat-9.0.54.tar.gz
+sudo tar xzf apache-tomcat-9.0.54.tar.gz -C /opt/
+
+# create a symbolic link to the Tomcat directory
+sudo ln -s /opt/apache-tomcat-9.0.54 /opt/tomcat
+
+# create a Tomcat user
+sudo useradd -r tomcat
+sudo chown -R tomcat:tomcat /opt/tomcat
+
+# create a systemd service file for Tomcat
+sudo tee /etc/systemd/system/tomcat.service <<EOF
+[Unit]
+Description=Apache Tomcat 9
+After=syslog.target network.target
+
+[Service]
+Type=forking
+
+Environment=JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk
+Environment=CATALINA_PID=/opt/tomcat/temp/tomcat.pid
+Environment=CATALINA_HOME=/opt/tomcat
+Environment=CATALINA_BASE=/opt/tomcat
+Environment='CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC'
+
+ExecStart=/opt/tomcat/bin/startup.sh
+ExecStop=/opt/tomcat/bin/shutdown.sh
+
+User=tomcat
+Group=tomcat
+UMask=0007
+RestartSec=10
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# reload the systemd daemon and start the Tomcat service
+sudo systemctl daemon-reload
+sudo systemctl start tomcat
+
+# enable the Tomcat service to start on boot
+sudo systemctl enable tomcat
+
+# print confirmation message
+echo "Apache Tomcat installed and started"
+

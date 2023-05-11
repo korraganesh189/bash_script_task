@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# check if the Nginx service is running
+if sudo systemctl is-active nginx > /dev/null; then
+    echo "Nginx service is running"
+else
+    echo "Nginx service is not running. Starting the service..."
+    sudo systemctl start nginx
+    echo "Nginx service has been started"
+fi
+

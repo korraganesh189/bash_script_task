@@ -1,0 +1,2 @@
+#!/bin/bash
+tail -n 3 "/root/bash_script_task/test" | wc -c | xargs -I {} truncate "/root/bash_script_task/test" -s -{}
